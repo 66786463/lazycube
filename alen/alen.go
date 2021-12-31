@@ -101,7 +101,7 @@ func main() {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 				break
 			}
-			fmt.Printf("%s %q\n", rl.ToCDDALength(), f)
+			fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
 		case strings.HasSuffix(f, ".ogg"):
 			fmt.Println("we do ogg!")
 		default:
