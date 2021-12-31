@@ -128,9 +128,14 @@ func main() {
 			os.Exit(1)
 		}
 		if total.Rate != 0 && total.Rate != rl.Rate {
-			fmt.Fprintf(os.Stderr, "E: sample rate changed from %d to %d while processing %s; exiting\n",
+			msg := fmt.Sprintf("sample rate changed from %d to %d while processing %s",
 				total.Rate, rl.Rate, f)
-			os.Exit(1)
+			if *doAccumulate || *doTotal {
+				fmt.Fprintf(os.Stderr, "E: %s; exiting\n", msg)
+				os.Exit(1)
+			} else {
+				fmt.Fprintf(os.Stderr, "W: %s\n", msg)
+			}
 		}
 		total.Rate = rl.Rate
 		total.Samples += rl.Samples
