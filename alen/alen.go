@@ -17,7 +17,7 @@ const (
 )
 
 type RawLength struct {
-	Rate    uint32
+	Rate    uint64
 	Samples uint64
 }
 
@@ -29,29 +29,28 @@ func (rl *RawLength) CDDALength() *CDDALength {
 	if rl.Samples == 0 {
 		return &CDDALength{}
 	}
-	minutes := rl.Samples / (uint64(rl.Rate) * 60)
+	minutes := rl.Samples / (rl.Rate * 60)
 	cl := &CDDALength{
 		Rate:    rl.Rate,
-		Minutes: uint32(minutes),
-		Seconds: uint32((rl.Samples - (uint64(minutes) * uint64(rl.Rate) * 60)) / uint64(rl.Rate)),
+		Minutes: minutes,
+		Seconds: (rl.Samples - (minutes * rl.Rate * 60)) / rl.Rate,
 	}
-	remainder := rl.Samples -
-		((uint64(cl.Minutes) * uint64(cl.Rate) * 60) + (uint64(cl.Seconds) * uint64(cl.Rate)))
+	remainder := rl.Samples - ((cl.Minutes * cl.Rate * 60) + (cl.Seconds * cl.Rate))
 	if cl.Rate == CDDARate {
-		cl.Sectors = uint32(remainder / CDDASectorSamples)
-		cl.Samples = uint32(remainder % CDDASectorSamples)
+		cl.Sectors = remainder / CDDASectorSamples
+		cl.Samples = remainder % CDDASectorSamples
 	} else {
-		cl.Samples = uint32(remainder)
+		cl.Samples = remainder
 	}
 	return cl
 }
 
 type CDDALength struct {
-	Rate    uint32
-	Minutes uint32
-	Seconds uint32
-	Sectors uint32
-	Samples uint32
+	Rate    uint64
+	Minutes uint64
+	Seconds uint64
+	Sectors uint64
+	Samples uint64
 }
 
 func (cl *CDDALength) String() string {
@@ -80,7 +79,7 @@ func fetchFLACLength(path string) (*RawLength, error) {
 	}
 	defer f.Close()
 	return &RawLength{
-		Rate:    f.Info.SampleRate,
+		Rate:    uint64(f.Info.SampleRate),
 		Samples: f.Info.NSamples,
 	}, nil
 }
@@ -96,7 +95,7 @@ func fetchOggVorbisLength(path string) (*RawLength, error) {
 		return nil, err
 	}
 	return &RawLength{
-		Rate:    uint32(format.SampleRate),
+		Rate:    uint64(format.SampleRate),
 		Samples: uint64(samples),
 	}, nil
 }
