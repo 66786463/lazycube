@@ -19,12 +19,29 @@ type RawLength struct {
 	Samples uint64
 }
 
+func (rl *RawLength) String() string {
+	return fmt.Sprintf("%d samples @ %d Hz", rl.Samples, rl.Rate)
+}
+
 type CDDALength struct {
 	Rate    uint32
 	Minutes uint32
 	Seconds uint32
 	Sectors uint32
 	Samples uint32
+}
+
+func (cl *CDDALength) String() string {
+	s := fmt.Sprintf("%2d:%02d", cl.Minutes, cl.Seconds)
+	if cl.Rate == 44100 {
+		s = fmt.Sprintf("%s.%02d", s, cl.Sectors)
+	} else {
+		s += "   "
+	}
+	if cl.Samples > 0 {
+		s = fmt.Sprintf("%s +%d", s, cl.Samples)
+	}
+	return s
 }
 
 var (
@@ -76,7 +93,7 @@ func main() {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 				break
 			}
-			fmt.Printf("%q: rate = %q Hz, length = %q samples\n", f, rl.Rate, rl.Samples)
+			fmt.Printf("%q: %s\n", f, rl)
 		case strings.HasSuffix(f, ".ogg"):
 			fmt.Println("we do ogg!")
 		default:
