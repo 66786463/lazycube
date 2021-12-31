@@ -27,7 +27,9 @@ func (rl *RawLength) String() string {
 
 func (rl *RawLength) CDDALength() *CDDALength {
 	if rl.Samples == 0 {
-		return &CDDALength{}
+		return &CDDALength{
+			Rate: rl.Rate,
+		}
 	}
 	minutes := rl.Samples / (rl.Rate * 60)
 	cl := &CDDALength{
