@@ -135,12 +135,17 @@ func main() {
 		}
 		total.Rate = rl.Rate
 		total.Samples += rl.Samples
-		if !*doTotal {
-			if *doAccumulate {
-				fmt.Printf("%s\t%s\n", total.ToCDDALength(), f)
-			} else {
-				fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
+		if *doTotal {
+			continue
+		}
+		if *doAccumulate {
+			fmt.Printf("%s\t%s\n", total.ToCDDALength(), f)
+		} else {
+			cl := rl.ToCDDALength()
+			if *doCheck && cl.Samples == 0 {
+				continue
 			}
+			fmt.Printf("%s\t%s\n", cl, f)
 		}
 	}
 	if *doTotal {
