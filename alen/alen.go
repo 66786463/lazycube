@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	CDDA_SECTOR_SAMPLES = 75
+	CDDA_RATE           = 44100
+	CDDA_SECTOR_SAMPLES = CDDA_RATE / 75
 )
 
 type RawLength struct {
@@ -33,8 +34,9 @@ func (rl *RawLength) ToCDDALength() *CDDALength {
 		Minutes: uint32(minutes),
 		Seconds: uint32((rl.Samples - (uint64(minutes) * uint64(rl.Rate) * 60)) / uint64(rl.Rate)),
 	}
-	remainder := rl.Samples - ((uint64(cl.Minutes) * uint64(cl.Rate) * 60) / uint64(cl.Rate)) + uint64(cl.Seconds*cl.Rate)
-	if cl.Rate == 44100 {
+	remainder := rl.Samples -
+		((uint64(cl.Minutes) * uint64(cl.Rate) * 60) + (uint64(cl.Seconds) * uint64(cl.Rate)))
+	if cl.Rate == CDDA_RATE {
 		cl.Sectors = uint32(remainder / CDDA_SECTOR_SAMPLES)
 		cl.Samples = uint32(remainder % CDDA_SECTOR_SAMPLES)
 	} else {
@@ -53,7 +55,7 @@ type CDDALength struct {
 
 func (cl *CDDALength) String() string {
 	s := fmt.Sprintf("%2d:%02d", cl.Minutes, cl.Seconds)
-	if cl.Rate == 44100 {
+	if cl.Rate == CDDA_RATE {
 		s = fmt.Sprintf("%s.%02d", s, cl.Sectors)
 	} else {
 		s += "   "
