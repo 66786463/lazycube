@@ -23,6 +23,26 @@ func (rl *RawLength) String() string {
 	return fmt.Sprintf("%d samples @ %d Hz", rl.Samples, rl.Rate)
 }
 
+func (rl *RawLength) ToCDDALength() *CDDALength {
+	if rl.Samples == 0 {
+		return &CDDALength{}
+	}
+	minutes := rl.Samples / (uint64(rl.Rate) * 60)
+	cl := &CDDALength{
+		Rate:    rl.Rate,
+		Minutes: uint32(minutes),
+		Seconds: uint32((rl.Samples - (uint64(minutes) * uint64(rl.Rate) * 60)) / uint64(rl.Rate)),
+	}
+	remainder := rl.Samples - ((uint64(cl.Minutes) * uint64(cl.Rate) * 60) / uint64(cl.Rate)) + uint64(cl.Seconds*cl.Rate)
+	if cl.Rate == 44100 {
+		cl.Sectors = uint32(remainder / CDDA_SECTOR_SAMPLES)
+		cl.Samples = uint32(remainder % CDDA_SECTOR_SAMPLES)
+	} else {
+		cl.Samples = uint32(remainder)
+	}
+	return cl
+}
+
 type CDDALength struct {
 	Rate    uint32
 	Minutes uint32
@@ -93,7 +113,7 @@ func main() {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 				break
 			}
-			fmt.Printf("%q: %s\n", f, rl)
+			fmt.Printf("%s %q\n", rl.ToCDDALength(), f)
 		case strings.HasSuffix(f, ".ogg"):
 			fmt.Println("we do ogg!")
 		default:
