@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mewkiz/flac/meta"
+	"github.com/mewkiz/flac"
 )
 
 const (
@@ -71,26 +71,14 @@ var (
 )
 
 func fetchFLACLength(path string) (*RawLength, error) {
-	f, err := os.Open(path)
+	f, err := flac.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	b, err := meta.New(f)
-	if err != nil {
-		return nil, err
-	}
-	if b.Header.Type != meta.TypeStreamInfo {
-		// NOTE(pjdc): Some malformed files don't put STREAMINFO first.  Handle?
-		return nil, fmt.Errorf("first block in %q is not STREAMINFO (type %q)", path, b.Header.Type)
-	}
-	s, ok := b.Body.(meta.StreamInfo)
-	if !ok {
-		panic(fmt.Sprintf("%q: failed to cast block body to STREAMINFO; b = %v", path, b))
-	}
 	return &RawLength{
-		Rate:    s.SampleRate,
-		Samples: s.NSamples,
+		Rate:    f.Info.SampleRate,
+		Samples: f.Info.NSamples,
 	}, nil
 }
 
