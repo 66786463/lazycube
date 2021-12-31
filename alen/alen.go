@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/mewkiz/flac"
+	"github.com/mewkiz/flac/meta"
 )
 
 const (
@@ -15,16 +15,16 @@ const (
 )
 
 type RawLength struct {
+	Rate    uint32
 	Samples uint64
-	Rate    int32
 }
 
 type CDDALength struct {
-	Rate    int32
-	Minutes int32
-	Seconds int32
-	Sectors int32
-	Samples int32
+	Rate    uint32
+	Minutes uint32
+	Seconds uint32
+	Sectors uint32
+	Samples uint32
 }
 
 var (
@@ -32,6 +32,30 @@ var (
 	doCheck      = flag.Bool("check", false, "check round sectors")
 	doTotal      = flag.Bool("total", false, "show total length")
 )
+
+func fetchFLACLength(path string) (*RawLength, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	b, err := meta.New(f)
+	if err != nil {
+		return nil, err
+	}
+	if b.Header.Type != meta.TypeStreamInfo {
+		// NOTE(pjdc): Some malformed files don't put STREAMINFO first.  Handle?
+		return nil, fmt.Errorf("first block in %q is not STREAMINFO (type %q)", path, b.Header.Type)
+	}
+	s, ok := b.Body.(meta.StreamInfo)
+	if !ok {
+		panic(fmt.Sprintf("%q: failed to cast block body to STREAMINFO; b = %v", path, b))
+	}
+	return &RawLength{
+		Rate:    s.SampleRate,
+		Samples: s.NSamples,
+	}, nil
+}
 
 func main() {
 	flag.Parse()
@@ -47,7 +71,12 @@ func main() {
 	for _, f := range flag.Args() {
 		switch {
 		case strings.HasSuffix(f, ".flac"):
-			fmt.Println("we do flac!")
+			rl, err := fetchFLACLength(f)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
+				break
+			}
+			fmt.Printf("%q: rate = %q Hz, length = %q samples\n", f, rl.Rate, rl.Samples)
 		case strings.HasSuffix(f, ".ogg"):
 			fmt.Println("we do ogg!")
 		default:
