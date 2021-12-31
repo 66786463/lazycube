@@ -25,7 +25,7 @@ func (rl *RawLength) String() string {
 	return fmt.Sprintf("%d samples @ %d Hz", rl.Samples, rl.Rate)
 }
 
-func (rl *RawLength) ToCDDALength() *CDDALength {
+func (rl *RawLength) CDDALength() *CDDALength {
 	if rl.Samples == 0 {
 		return &CDDALength{}
 	}
@@ -139,9 +139,9 @@ func main() {
 			continue
 		}
 		if *doAccumulate {
-			fmt.Printf("%s\t%s\n", total.ToCDDALength(), f)
+			fmt.Printf("%s\t%s\n", total.CDDALength(), f)
 		} else {
-			cl := rl.ToCDDALength()
+			cl := rl.CDDALength()
 			if *doCheck && cl.Samples == 0 {
 				continue
 			}
@@ -149,6 +149,6 @@ func main() {
 		}
 	}
 	if *doTotal {
-		fmt.Printf("%s\t%s\n", total.ToCDDALength(), "total")
+		fmt.Printf("%s\t%s\n", total.CDDALength(), "total")
 	}
 }
