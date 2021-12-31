@@ -110,10 +110,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, "W: ignoring -total since -check is set")
 		*doTotal = false
 	}
-	rl := &RawLength{}
 	total := &RawLength{}
 	var err error
 	for _, f := range flag.Args() {
+		rl := &RawLength{}
 		switch {
 		case strings.HasSuffix(f, ".flac"):
 			rl, err = fetchFLACLength(f)
