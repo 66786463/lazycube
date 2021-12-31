@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	CDDARate          = 44100
-	CDDASectorSamples = CDDARate / 75
+	CDDARate         = 44100
+	SamplesPerSector = CDDARate / 75
 )
 
 type RawLength struct {
@@ -39,8 +39,8 @@ func (rl *RawLength) CDDALength() *CDDALength {
 	}
 	remainder := rl.Samples - ((cl.Minutes * cl.Rate * 60) + (cl.Seconds * cl.Rate))
 	if cl.Rate == CDDARate {
-		cl.Sectors = remainder / CDDASectorSamples
-		cl.Samples = remainder % CDDASectorSamples
+		cl.Sectors = remainder / SamplesPerSector
+		cl.Samples = remainder % SamplesPerSector
 	} else {
 		cl.Samples = remainder
 	}
