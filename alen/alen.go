@@ -76,7 +76,7 @@ var (
 func fetchFLACLength(path string) (*RawLength, error) {
 	f, err := flac.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %v", path, err)
 	}
 	defer f.Close()
 	return &RawLength{
