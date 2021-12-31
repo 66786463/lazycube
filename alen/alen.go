@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jfreymuth/oggvorbis"
 	"github.com/mewkiz/flac"
 )
 
@@ -84,6 +85,22 @@ func fetchFLACLength(path string) (*RawLength, error) {
 	}, nil
 }
 
+func fetchOggVorbisLength(path string) (*RawLength, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	samples, format, err := oggvorbis.GetLength(f)
+	if err != nil {
+		return nil, err
+	}
+	return &RawLength{
+		Rate:    uint32(format.SampleRate),
+		Samples: uint64(samples),
+	}, nil
+}
+
 func main() {
 	flag.Parse()
 	if *doCheck && *doAccumulate {
@@ -104,7 +121,12 @@ func main() {
 			}
 			fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
 		case strings.HasSuffix(f, ".ogg"):
-			fmt.Println("we do ogg!")
+			rl, err := fetchOggVorbisLength(f)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
+				break
+			}
+			fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
 		default:
 			fmt.Fprintf(os.Stderr, "W: we don't do whatever the hell %q is!\n", f)
 		}
