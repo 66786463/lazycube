@@ -94,7 +94,6 @@ func main() {
 		fmt.Fprintln(os.Stderr, "W: ignoring -total since -check is set")
 		*doTotal = false
 	}
-	fmt.Println("Hello, world!")
 	for _, f := range flag.Args() {
 		switch {
 		case strings.HasSuffix(f, ".flac"):
