@@ -111,24 +111,39 @@ func main() {
 		fmt.Fprintln(os.Stderr, "W: ignoring -total since -check is set")
 		*doTotal = false
 	}
+	rl := &RawLength{}
+	total := &RawLength{}
+	var err error
 	for _, f := range flag.Args() {
 		switch {
 		case strings.HasSuffix(f, ".flac"):
-			rl, err := fetchFLACLength(f)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
-				break
-			}
-			fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
+			rl, err = fetchFLACLength(f)
 		case strings.HasSuffix(f, ".ogg"):
-			rl, err := fetchOggVorbisLength(f)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
-				break
-			}
-			fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
+			rl, err = fetchOggVorbisLength(f)
 		default:
-			fmt.Fprintf(os.Stderr, "W: we don't do whatever the hell %q is!\n", f)
+			fmt.Fprintf(os.Stderr, "E: we don't do whatever the hell %q is!\n", f)
+			os.Exit(1)
 		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "E: %v\n", err)
+			os.Exit(1)
+		}
+		if total.Rate != 0 && total.Rate != rl.Rate {
+			fmt.Fprintf(os.Stderr, "E: sample rate changed from %d to %d while processing %s; exiting\n",
+				total.Rate, rl.Rate, f)
+			os.Exit(1)
+		}
+		total.Rate = rl.Rate
+		total.Samples += rl.Samples
+		if !*doTotal {
+			if *doAccumulate {
+				fmt.Printf("%s\t%s\n", total.ToCDDALength(), f)
+			} else {
+				fmt.Printf("%s\t%s\n", rl.ToCDDALength(), f)
+			}
+		}
+	}
+	if *doTotal {
+		fmt.Printf("%s\t%s\n", total.ToCDDALength(), "total")
 	}
 }
