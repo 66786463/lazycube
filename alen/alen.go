@@ -26,17 +26,14 @@ func (rl *RawLength) String() string {
 }
 
 func (rl *RawLength) CDDALength() *CDDALength {
-	if rl.Samples == 0 {
-		return &CDDALength{
-			Rate: rl.Rate,
-		}
-	}
-	minutes := rl.Samples / (rl.Rate * 60)
 	cl := &CDDALength{
-		Rate:    rl.Rate,
-		Minutes: minutes,
-		Seconds: (rl.Samples - (minutes * rl.Rate * 60)) / rl.Rate,
+		Rate: rl.Rate,
 	}
+	if rl.Samples == 0 {
+		return cl
+	}
+	cl.Minutes = rl.Samples / (rl.Rate * 60)
+	cl.Seconds = (rl.Samples - (cl.Minutes * cl.Rate * 60)) / rl.Rate
 	remainder := rl.Samples - ((cl.Minutes * cl.Rate * 60) + (cl.Seconds * cl.Rate))
 	if cl.Rate == CDDARate {
 		cl.Sectors = remainder / SamplesPerSector
