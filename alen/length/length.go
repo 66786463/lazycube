@@ -1,6 +1,13 @@
 package length
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/jfreymuth/oggvorbis"
+	"github.com/mewkiz/flac"
+)
 
 const (
 	CDDARate         = 44100
@@ -54,4 +61,43 @@ func (cl *CDDALength) String() string {
 		s = fmt.Sprintf("%s +%d", s, cl.Samples)
 	}
 	return s
+}
+
+func fetchFLACLength(path string) (*RawLength, error) {
+	f, err := flac.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %v", path, err)
+	}
+	defer f.Close()
+	return &RawLength{
+		Rate:    uint64(f.Info.SampleRate),
+		Samples: f.Info.NSamples,
+	}, nil
+}
+
+func fetchOggVorbisLength(path string) (*RawLength, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	samples, format, err := oggvorbis.GetLength(f)
+	if err != nil {
+		return nil, err
+	}
+	return &RawLength{
+		Rate:    uint64(format.SampleRate),
+		Samples: uint64(samples),
+	}, nil
+}
+
+func FetchLength(path string) (*RawLength, error) {
+	switch {
+	case strings.HasSuffix(path, ".flac"):
+		return fetchFLACLength(path)
+	case strings.HasSuffix(path, ".ogg"):
+		return fetchOggVorbisLength(path)
+	default:
+		return nil, fmt.Errorf("don't know how to fetch length of %v", path)
+	}
 }

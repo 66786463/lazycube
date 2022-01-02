@@ -5,10 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
-
-	"github.com/jfreymuth/oggvorbis"
-	"github.com/mewkiz/flac"
 
 	"ondioline.org/alen/length"
 )
@@ -18,45 +14,6 @@ var (
 	doCheck      = flag.Bool("check", false, "check round sectors")
 	doTotal      = flag.Bool("total", false, "show total length")
 )
-
-func fetchFLACLength(path string) (*length.RawLength, error) {
-	f, err := flac.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %v", path, err)
-	}
-	defer f.Close()
-	return &length.RawLength{
-		Rate:    uint64(f.Info.SampleRate),
-		Samples: f.Info.NSamples,
-	}, nil
-}
-
-func fetchOggVorbisLength(path string) (*length.RawLength, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	samples, format, err := oggvorbis.GetLength(f)
-	if err != nil {
-		return nil, err
-	}
-	return &length.RawLength{
-		Rate:    uint64(format.SampleRate),
-		Samples: uint64(samples),
-	}, nil
-}
-
-func FetchLength(path string) (*length.RawLength, error) {
-	switch {
-	case strings.HasSuffix(path, ".flac"):
-		return fetchFLACLength(path)
-	case strings.HasSuffix(path, ".ogg"):
-		return fetchOggVorbisLength(path)
-	default:
-		return nil, fmt.Errorf("don't know how to fetch length of %v", path)
-	}
-}
 
 func main() {
 	flag.Parse()
@@ -70,7 +27,7 @@ func main() {
 	}
 	total := &length.RawLength{}
 	for _, f := range flag.Args() {
-		rl, err := FetchLength(f)
+		rl, err := length.FetchLength(f)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "E: %v\n", err)
 			os.Exit(1)
