@@ -110,9 +110,9 @@ func main() {
 		*doTotal = false
 	}
 	total := &RawLength{}
-	var err error
 	for _, f := range flag.Args() {
 		rl := &RawLength{}
+		var err error
 		switch {
 		case strings.HasSuffix(f, ".flac"):
 			rl, err = fetchFLACLength(f)
