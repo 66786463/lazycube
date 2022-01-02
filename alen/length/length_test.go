@@ -1,41 +1,43 @@
-package main
+package length_test
 
 import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"ondioline.org/alen/length"
 )
 
 func TestCDDALength(t *testing.T) {
 	table := []struct {
-		have *RawLength
-		want *CDDALength
+		have *length.RawLength
+		want *length.CDDALength
 	}{
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    44100,
 				Samples: 0,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate: 44100,
 			},
 		},
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    44100,
 				Samples: 588,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate:    44100,
 				Sectors: 1,
 			},
 		},
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    44100,
 				Samples: 9700524,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate:    44100,
 				Minutes: 3,
 				Seconds: 39,
@@ -44,41 +46,41 @@ func TestCDDALength(t *testing.T) {
 			},
 		},
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    48000,
 				Samples: 0,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate: 48000,
 			},
 		},
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    48000,
 				Samples: 588,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate:    48000,
 				Samples: 588,
 			},
 		},
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    44100,
 				Samples: 159509700,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate:    44100,
 				Minutes: 60,
 				Seconds: 17,
 			},
 		},
 		{
-			have: &RawLength{
+			have: &length.RawLength{
 				Rate:    48000,
 				Samples: 13360056,
 			},
-			want: &CDDALength{
+			want: &length.CDDALength{
 				Rate:    48000,
 				Minutes: 4,
 				Seconds: 38,

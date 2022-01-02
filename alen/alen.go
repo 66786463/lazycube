@@ -9,61 +9,9 @@ import (
 
 	"github.com/jfreymuth/oggvorbis"
 	"github.com/mewkiz/flac"
+
+	"ondioline.org/alen/length"
 )
-
-const (
-	CDDARate         = 44100
-	SamplesPerSector = CDDARate / 75
-)
-
-type RawLength struct {
-	Rate    uint64
-	Samples uint64
-}
-
-func (rl *RawLength) String() string {
-	return fmt.Sprintf("%d samples @ %d Hz", rl.Samples, rl.Rate)
-}
-
-func (rl *RawLength) CDDALength() *CDDALength {
-	cl := &CDDALength{
-		Rate: rl.Rate,
-	}
-	if rl.Samples == 0 {
-		return cl
-	}
-	cl.Minutes = rl.Samples / (rl.Rate * 60)
-	cl.Seconds = (rl.Samples - (cl.Minutes * cl.Rate * 60)) / rl.Rate
-	remainder := rl.Samples - ((cl.Minutes * cl.Rate * 60) + (cl.Seconds * cl.Rate))
-	if cl.Rate == CDDARate {
-		cl.Sectors = remainder / SamplesPerSector
-		cl.Samples = remainder % SamplesPerSector
-	} else {
-		cl.Samples = remainder
-	}
-	return cl
-}
-
-type CDDALength struct {
-	Rate    uint64
-	Minutes uint64
-	Seconds uint64
-	Sectors uint64
-	Samples uint64
-}
-
-func (cl *CDDALength) String() string {
-	s := fmt.Sprintf("%2d:%02d", cl.Minutes, cl.Seconds)
-	if cl.Rate == CDDARate {
-		s = fmt.Sprintf("%s.%02d", s, cl.Sectors)
-	} else {
-		s += "   "
-	}
-	if cl.Samples > 0 {
-		s = fmt.Sprintf("%s +%d", s, cl.Samples)
-	}
-	return s
-}
 
 var (
 	doAccumulate = flag.Bool("accumulate", false, "show running total")
@@ -71,19 +19,19 @@ var (
 	doTotal      = flag.Bool("total", false, "show total length")
 )
 
-func fetchFLACLength(path string) (*RawLength, error) {
+func fetchFLACLength(path string) (*length.RawLength, error) {
 	f, err := flac.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", path, err)
 	}
 	defer f.Close()
-	return &RawLength{
+	return &length.RawLength{
 		Rate:    uint64(f.Info.SampleRate),
 		Samples: f.Info.NSamples,
 	}, nil
 }
 
-func fetchOggVorbisLength(path string) (*RawLength, error) {
+func fetchOggVorbisLength(path string) (*length.RawLength, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -93,13 +41,13 @@ func fetchOggVorbisLength(path string) (*RawLength, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &RawLength{
+	return &length.RawLength{
 		Rate:    uint64(format.SampleRate),
 		Samples: uint64(samples),
 	}, nil
 }
 
-func FetchLength(path string) (*RawLength, error) {
+func FetchLength(path string) (*length.RawLength, error) {
 	switch {
 	case strings.HasSuffix(path, ".flac"):
 		return fetchFLACLength(path)
@@ -120,7 +68,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "W: ignoring -total since -check is set")
 		*doTotal = false
 	}
-	total := &RawLength{}
+	total := &length.RawLength{}
 	for _, f := range flag.Args() {
 		rl, err := FetchLength(f)
 		if err != nil {

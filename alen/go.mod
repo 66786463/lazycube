@@ -1,4 +1,4 @@
-module main
+module ondioline.org/alen
 
 go 1.17
 
