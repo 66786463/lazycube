@@ -99,6 +99,17 @@ func fetchOggVorbisLength(path string) (*RawLength, error) {
 	}, nil
 }
 
+func FetchLength(path string) (*RawLength, error) {
+	switch {
+	case strings.HasSuffix(path, ".flac"):
+		return fetchFLACLength(path)
+	case strings.HasSuffix(path, ".ogg"):
+		return fetchOggVorbisLength(path)
+	default:
+		return nil, fmt.Errorf("don't know how to fetch length of %v", path)
+	}
+}
+
 func main() {
 	flag.Parse()
 	if *doCheck && *doAccumulate {
@@ -111,17 +122,7 @@ func main() {
 	}
 	total := &RawLength{}
 	for _, f := range flag.Args() {
-		rl := &RawLength{}
-		var err error
-		switch {
-		case strings.HasSuffix(f, ".flac"):
-			rl, err = fetchFLACLength(f)
-		case strings.HasSuffix(f, ".ogg"):
-			rl, err = fetchOggVorbisLength(f)
-		default:
-			fmt.Fprintf(os.Stderr, "E: we don't do whatever the hell %q is!\n", f)
-			os.Exit(1)
-		}
+		rl, err := FetchLength(f)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "E: %v\n", err)
 			os.Exit(1)
