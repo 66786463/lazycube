@@ -3,8 +3,6 @@ package length_test
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
 	"ondioline.org/alen/length"
 )
 
@@ -90,7 +88,7 @@ func TestCDDALength(t *testing.T) {
 	}
 
 	for _, test := range table {
-		if got := test.have.CDDALength(); !cmp.Equal(got, test.want) {
+		if got := test.have.CDDALength(); *got != *test.want {
 			t.Fatalf(`got "%v", want "%v"`, got, test.want)
 		}
 	}
