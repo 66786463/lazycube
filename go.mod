@@ -1,4 +1,4 @@
-module ondioline.org/alen
+module github.com/chucklebot/lazycube
 
 go 1.17
 

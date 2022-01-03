@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"ondioline.org/alen/length"
+	"github.com/chucklebot/lazycube/length"
 )
 
 var (
