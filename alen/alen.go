@@ -4,7 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
+	"log"
 
 	"ondioline.org/alen/length"
 )
@@ -16,30 +16,29 @@ var (
 )
 
 func main() {
+	log.SetFlags(0)
 	flag.Parse()
 	if *doCheck && *doAccumulate {
-		fmt.Fprintln(os.Stderr, "W: ignoring -accumulate since -check is set")
+		log.Print("ignoring -accumulate since -check is set")
 		*doAccumulate = false
 	}
 	if *doCheck && *doTotal {
-		fmt.Fprintln(os.Stderr, "W: ignoring -total since -check is set")
+		log.Print("ignoring -total since -check is set")
 		*doTotal = false
 	}
 	total := &length.RawLength{}
 	for _, f := range flag.Args() {
 		rl, err := length.FetchLength(f)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "E: %v\n", err)
-			os.Exit(1)
+			log.Fatalf("while fetching length of %s: %v", f, err)
 		}
 		if total.Rate != 0 && total.Rate != rl.Rate {
 			msg := fmt.Sprintf("sample rate changed from %d to %d while processing %s",
 				total.Rate, rl.Rate, f)
 			if *doAccumulate || *doTotal {
-				fmt.Fprintf(os.Stderr, "E: %s; exiting\n", msg)
-				os.Exit(1)
+				log.Fatalf(msg)
 			} else {
-				fmt.Fprintf(os.Stderr, "W: %s\n", msg)
+				log.Print(msg)
 			}
 		}
 		total.Rate = rl.Rate
