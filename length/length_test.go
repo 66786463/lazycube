@@ -106,3 +106,49 @@ func TestCDDALength(t *testing.T) {
 		}
 	}
 }
+
+func TestFetchLength(t *testing.T) {
+	table := []struct {
+		have string
+		want *length.RawLength
+	}{
+		{
+			have: "testdata/sin.440Hz@44100.flac",
+			want: &length.RawLength{
+				Rate:    44100,
+				Samples: 1234567,
+			},
+		},
+		{
+			have: "testdata/sin.440Hz@44100.ogg",
+			want: &length.RawLength{
+				Rate:    44100,
+				Samples: 1234567,
+			},
+		},
+		{
+			have: "testdata/sin.440Hz@48000.flac",
+			want: &length.RawLength{
+				Rate:    48000,
+				Samples: 1234567,
+			},
+		},
+		{
+			have: "testdata/sin.440Hz@48000.flac",
+			want: &length.RawLength{
+				Rate:    48000,
+				Samples: 1234567,
+			},
+		},
+	}
+
+	for _, test := range table {
+		got, err := length.FetchLength(test.have)
+		switch {
+		case err != nil:
+			t.Fatalf(`want "%v", got error: %v`, test.want, err)
+		case *got != *test.want:
+			t.Fatalf(`want "%v", got "%v"`, test.want, got)
+		}
+	}
+}
