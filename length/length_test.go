@@ -75,6 +75,19 @@ func TestCDDALength(t *testing.T) {
 		},
 		{
 			have: &length.RawLength{
+				Rate:    44100,
+				Samples: 3686827,
+			},
+			want: &length.CDDALength{
+				Rate:    44100,
+				Minutes: 1,
+				Seconds: 23,
+				Sectors: 45,
+				Samples: 67,
+			},
+		},
+		{
+			have: &length.RawLength{
 				Rate:    48000,
 				Samples: 13360056,
 			},
