@@ -1,4 +1,4 @@
-module github.com/chucklebot/lazycube
+module github.com/66786463/lazycube
 
 go 1.17
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chucklebot/lazycube/length"
+	"github.com/66786463/lazycube/length"
 )
 
 var (

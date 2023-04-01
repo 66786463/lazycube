@@ -3,7 +3,7 @@ package length_test
 import (
 	"testing"
 
-	"github.com/chucklebot/lazycube/length"
+	"github.com/66786463/lazycube/length"
 )
 
 func TestCDDALength(t *testing.T) {
